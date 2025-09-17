@@ -1,0 +1,142 @@
+# Copyright (c) 2025 Boston Dynamics AI Institute LLC. All rights reserved.
+
+[build-system]
+requires = ["setuptools", "toml"]
+build-backend = "setuptools.build_meta"
+
+[tool.isort]
+
+atomic = true
+profile = "black"
+line_length = 120
+py_version = 310
+skip_glob = ["docs/*", "logs/*"]
+group_by_package = true
+
+sections = [
+    "FUTURE",
+    "STDLIB",
+    "THIRDPARTY",
+    "ISAACLABPARTY",
+    "FIRSTPARTY",
+    "LOCALFOLDER",
+]
+extra_standard_library = [
+    "numpy",
+    "h5py",
+    "open3d",
+    "torch",
+    "tensordict",
+    "bpy",
+    "matplotlib",
+    "gymnasium",
+    "gym",
+    "scipy",
+    "hid",
+    "yaml",
+    "prettytable",
+    "toml",
+    "trimesh",
+    "tqdm",
+    "psutil",
+]
+known_thirdparty = [
+    "isaacsim.core.api",
+    "omni.replicator.core",
+    "pxr",
+    "omni.kit.*",
+    "warp",
+    "carb",
+    "Semantics",
+]
+known_isaaclabparty = [
+    "isaaclab",
+    "isaaclab_tasks",
+    "isaaclab_assets",
+    "isaaclab_mimic",
+    "isaaclab_rl"
+]
+
+# Modify the following to include the package names of your first-party code
+known_firstparty = "relic"
+known_local_folder = "config"
+
+[tool.pyright]
+
+exclude = [
+    "**/__pycache__",
+    "**/docs",
+    "**/logs",
+    ".git",
+    ".vscode",
+]
+
+typeCheckingMode = "basic"
+pythonVersion = "3.10"
+pythonPlatform = "Linux"
+enableTypeIgnoreComments = true
+
+# This is required as the CI pre-commit does not download the module (i.e. numpy, torch, prettytable)
+# Therefore, we have to ignore missing imports
+reportMissingImports = "none"
+# This is required to ignore for type checks of modules with stubs missing.
+reportMissingModuleSource = "none" # -> most common: prettytable in mdp managers
+
+reportGeneralTypeIssues = "none"       # -> raises 218 errors (usage of literal MISSING in dataclasses)
+reportOptionalMemberAccess = "warning" # -> raises 8 errors
+reportPrivateUsage = "warning"
+
+########################################################
+# pixi
+########################################################
+
+[project]
+name = "relic"
+version = "0.1.0"
+description = "IsaacLab extension for ReLIC training code."
+authors = [
+    {name = "Xinghao Zhu", email = "xizhu@theaiinstitute.com"},
+]
+requires-python = "==3.10"
+
+[tool.pixi.project]
+name = "relic"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.system-requirements]
+cuda = "12"
+libc = { family = "glibc", version = "2.34" }
+
+[tool.setuptools]
+packages = ["relic"]
+
+[tool.setuptools.package-dir]
+"" = "source/relic"
+
+[tool.pixi.pypi-options]
+index-url = "https://pypi.org/simple"
+extra-index-urls = ["https://pypi.nvidia.com/simple"]
+
+[tool.pixi.pypi-dependencies]
+relic = { path = "source/relic", editable = true }
+torch = { version = ">=2.5.1", index = "https://download.pytorch.org/whl/cu121" }
+torchvision = { version = ">=0.20.1", index = "https://download.pytorch.org/whl/cu121" }
+isaaclab = { version = "==2.1.0", extras = ["isaacsim", "all"] }
+nvidia-cudnn-cu12 = { version = "*", index = "https://pypi.org/simple" }
+pip = { version = ">=25.0.1,<26" }
+plotly = { version = ">=6.0.1,<7" }
+viser = { version = ">=0.2.23,<0.3" }
+scipy = { version = ">=1.15.2,<2" }
+gymnasium = { version = ">=1.0.0,<2" }
+mujoco = { version = ">=3.2.7,<4" }
+protobuf = { version = "==3.20.3" }
+pillow = { version = "==11.0.0" }
+
+[tool.pixi.dependencies]
+python = "==3.10"
+pre-commit = ">=4.3.0,<5"
+
+[tool.pixi.tasks]
+install-hooks = "pre-commit install"
+lint = "pre-commit run --all-files"
