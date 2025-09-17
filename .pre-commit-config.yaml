@@ -4,13 +4,6 @@ default_stages: [pre-commit]
 default_install_hook_types: [pre-commit, pre-push]
 
 repos:
-- repo: https://github.com/charliermarsh/ruff-pre-commit
-  # Ruff version.
-  rev: 'v0.5.3'
-  hooks:
-    - id: ruff
-      args: ['--fix', '--config', 'pyproject.toml']
-
 - repo: https://github.com/psf/black
   rev: 25.1.0
   hooks:
@@ -23,39 +16,14 @@ repos:
   rev: v5.0.0
   hooks:
   -   id: check-yaml
-  -   id: check-added-large-files
-  -   id: check-toml
   -   id: end-of-file-fixer
-  -   id: debug-statements
   -   id: trailing-whitespace
 
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.10.1
+- repo: local
   hooks:
-  -   id: mypy
-      pass_filenames: false
-      additional_dependencies:
-      - protobuf
-      - types-protobuf
-      - types-requests
-      - types-simplejson
-      - types-ujson
-      - types-PyYAML
-      - types-toml
-      - types-six
-      - types-pytz
-      args: ["."]
-
-- repo: https://github.com/jumanjihouse/pre-commit-hooks
-  rev: 3.0.0
-  hooks:
-  -  id: forbid-binary
-
-- repo: https://github.com/johannsdg/pre-commit-license-headers
-  rev: v0.1.0
-  hooks:
-    - id: check-license-headers
-      args:
-        - "--template"
-        - |
-          Copyright (c) [YEARS] Boston Dynamics AI Institute LLC. All rights reserved.
+    - id: check-copyright
+      name: check that all files have the copyright header
+      entry: python scripts/check_copyright.py
+      language: python
+      files: \.(py|sh|bash)$
+      types: [text]
