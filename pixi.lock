@@ -2488,7 +2488,7 @@ packages:
 - pypi: ./source/relic
   name: relic
   version: 0.1.0
-  sha256: 9b8bf7998ca971af8e928d767bc860a4295d8bbb09ac7679b7a48d52ac9eced3
+  sha256: d33276c322eeb686a1a768d8cf4e4083b907f6a777cca0f7bf224399049151eb
   requires_dist:
   - psutil
   requires_python: '>=3.10'
