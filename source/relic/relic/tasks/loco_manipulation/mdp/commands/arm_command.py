@@ -24,8 +24,10 @@ class UniformArmJointCommand(CommandTerm):
         """Initialize the command generator class.
 
         Args:
+        ----
             cfg: The configuration parameters for the command generator.
             env: The environment object.
+
         """
         # initialize the base class
         super().__init__(cfg, env)
@@ -105,8 +107,10 @@ class ArmJointTrajectoryCommand(CommandTerm):
         """Initialize the command term class.
 
         Args:
+        ----
             cfg: The configuration parameters for the command term.
             env: The environment object.
+
         """
         # initialize the base class
         super().__init__(cfg, env)
@@ -261,8 +265,10 @@ class LegJointTrajectoryCommand(CommandTerm):
         """Initialize the command term class.
 
         Args:
+        ----
             cfg: The configuration parameters for the command term.
             env: The environment object.
+
         """
         # initialize the base class
         super().__init__(cfg, env)
@@ -417,8 +423,10 @@ class MultiLegJointTrajectoryCommand(CommandTerm):
         """Initialize the command term class.
 
         Args:
+        ----
             cfg: The configuration parameters for the command term.
             env: The environment object.
+
         """
         # initialize the base class
         super().__init__(cfg, env)
@@ -434,13 +442,11 @@ class MultiLegJointTrajectoryCommand(CommandTerm):
             ],
             device=self.device,
         )
-        self.leg_joint_names = sum(
-            [
-                self.robot.find_joints(names)[1]
-                for _, names in self.cfg.leg_joint_names.items()
-            ],
-            [],
-        )
+        self.leg_joint_names = [
+            joint_name
+            for _, names in self.cfg.leg_joint_names.items()
+            for joint_name in self.robot.find_joints(names)[1]
+        ]
 
         # create buffers to store the command
         # -- leg trajectory command
@@ -645,8 +651,10 @@ class BasePoseCommand(CommandTerm):
         """Initialize the command term class.
 
         Args:
+        ----
             cfg: The configuration parameters for the command term.
             env: The environment object.
+
         """
         # initialize the base class
         super().__init__(cfg, env)
@@ -748,8 +756,10 @@ class ArmLegJointBasePoseCommand(CommandTerm):
         """Initialize the command term class.
 
         Args:
+        ----
             cfg: The configuration parameters for the command term.
             env: The environment object.
+
         """
         # initialize the base class
         super().__init__(cfg, env)
@@ -766,13 +776,11 @@ class ArmLegJointBasePoseCommand(CommandTerm):
             ],
             device=self.device,
         )
-        self.leg_joint_names = sum(
-            [
-                self.robot.find_joints(names)[1]
-                for _, names in self.cfg.leg_joint_names.items()
-            ],
-            [],
-        )
+        self.leg_joint_names = [
+            joint_name
+            for _, names in self.cfg.leg_joint_names.items()
+            for joint_name in self.robot.find_joints(names)[1]
+        ]
 
         # create buffers to store the command
         # -- arm trajectory command

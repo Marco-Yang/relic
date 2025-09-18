@@ -3,12 +3,9 @@
 """Functions specific to the loco-manipulation environments."""
 
 import torch
-from typing import TYPE_CHECKING
 
 import isaaclab.utils.math as math_utils
-from isaaclab.assets import RigidObject, Articulation
 from isaaclab.envs import ManagerBasedRLEnv
-from isaaclab.managers import SceneEntityCfg
 
 
 def known_external_force_torque(

@@ -24,11 +24,13 @@ def modify_reward_weight(
     """Curriculum that modifies a reward weight a given number of steps.
 
     Args:
+    ----
         env: The learning environment.
         env_ids: Not used since all environments are affected.
         term_name: The name of the reward term.
         weight: The weight of the reward term.
         num_steps: The number of steps after which the change should be applied.
+
     """
     if env.common_step_counter > num_steps:
         # obtain term settings
@@ -51,11 +53,13 @@ def modify_contact_termination(
     """Curriculum that modifies the termination with a given number of steps.
 
     Args:
+    ----
         env: The learning environment.
         env_ids: Not used since all environments are affected.
         term_name: The name of the reward term.
         weight: The weight of the reward term.
         num_steps: The number of steps after which the change should be applied.
+
     """
     if env.common_step_counter > num_steps:
         # obtain term settings

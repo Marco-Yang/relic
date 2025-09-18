@@ -10,6 +10,8 @@ from isaaclab_rl.rsl_rl import (
 
 @configclass
 class SpotInterlimbPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+    """Configuration for the PPO runner."""
+
     num_steps_per_env = 24
     max_iterations = 10000
     save_interval = 200

@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 COPYRIGHT_PATTERN = re.compile(
-    r"^#? ?Copyright \(c\) (?P<start_year>[0-9]{4})(?:-(?P<end_year>[0-9]{4}))?[, ]+(?P<holder>.+?)\.(?: +All rights reserved\.)?"
+    r"^#? ?Copyright \(c\) (?P<start_year>[0-9]{4})(?:-(?P<end_year>[0-9]{4}))?[, ]+(?P<holder>.+?)\.(?: +All rights reserved\.)?"  # noqa: E501
 )
 
 

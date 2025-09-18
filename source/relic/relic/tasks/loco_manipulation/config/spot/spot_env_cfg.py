@@ -11,6 +11,8 @@ from relic.assets.spot.spot import SPOT_ARM_CFG  # isort: skip
 
 @configclass
 class SpotInterlimbEnvCfg_Phase_1(InterlimbEnvCfg):
+    """Configuration for the phase 1 environment."""
+
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
@@ -22,6 +24,8 @@ class SpotInterlimbEnvCfg_Phase_1(InterlimbEnvCfg):
 
 @configclass
 class SpotInterlimbEnvCfg_Phase_2(InterlimbEnvCfg):
+    """Configuration for the phase 2 environment."""
+
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
@@ -49,6 +53,8 @@ class SpotInterlimbEnvCfg_Phase_2(InterlimbEnvCfg):
 
 @configclass
 class SpotInterlimbEnvCfg_Phase_3(InterlimbEnvCfg):
+    """Configuration for the phase 3 environment."""
+
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
@@ -83,6 +89,8 @@ class SpotInterlimbEnvCfg_Phase_3(InterlimbEnvCfg):
 
 @configclass
 class SpotInterlimbEnvCfg_PLAY(SpotInterlimbEnvCfg_Phase_1):
+    """Configuration for the play environment."""
+
     def __post_init__(self):
         # post init of parent
         super().__post_init__()

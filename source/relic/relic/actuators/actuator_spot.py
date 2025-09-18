@@ -15,6 +15,8 @@ from torch._tensor import Tensor
 
 
 class SpotKneeActuator(RemotizedPDActuator):
+    """Spot knee actuator."""
+
     def __init__(
         self,
         cfg: RemotizedPDActuatorCfg,
@@ -67,7 +69,6 @@ class SpotKneeActuator(RemotizedPDActuator):
         joint_vel: torch.Tensor,
     ) -> ArticulationActions:
         """Compute the control action for the Spot robot with positional torque speed limits."""
-
         control_action = super().compute(control_action, joint_pos, joint_vel)
 
         # compute torque-speed limits

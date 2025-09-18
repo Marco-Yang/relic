@@ -86,6 +86,48 @@ reportGeneralTypeIssues = "none"       # -> raises 218 errors (usage of literal 
 reportOptionalMemberAccess = "warning" # -> raises 8 errors
 reportPrivateUsage = "warning"
 
+[tool.ruff]
+
+line-length = 120
+
+target-version = "py310"
+
+[tool.ruff.lint]
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "D101",
+    "D102",
+    "D2",
+    "D3",
+    "D402",
+    "D404",
+    "D419",
+    "SLF001", # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+    "RET501",
+    "RET502",
+    "RET503", # https://docs.astral.sh/ruff/rules/#flake8-return-ret
+    "RUF",    # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
+    "PLC",
+    "PLE",
+    "PLW",    # https://docs.astral.sh/ruff/rules/#pylint-pl
+    "PIE",    # https://docs.astral.sh/ruff/rules/#flake8-pie-pie
+    "FLY",
+]
+
+[tool.ruff.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["gtsam.Pose3"]
+
 ########################################################
 # pixi
 ########################################################

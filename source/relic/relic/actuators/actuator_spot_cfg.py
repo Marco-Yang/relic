@@ -10,6 +10,7 @@ from relic.assets.spot.constants import POS_TORQUE_SPEED_LIMIT, NEG_TORQUE_SPEED
 
 @configclass
 class SpotKneeActuatorCfg(RemotizedPDActuatorCfg):
+    """Configuration for the Spot knee actuator."""
 
     class_type: type = SpotKneeActuator
 

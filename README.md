@@ -13,7 +13,7 @@ This repository contains the official implementation for the paper "Versatile Lo
 [**Project Website**](https://relic-locoman.rai-inst.com/) | [**arXiv Paper**](https://arxiv.org/abs/2506.07876)
 
 ---
-*Our ReLIC policy enabling a quadruped robot to walk with three legs and manipulate with the arm and one leg.*
+*Our ReLIC policy enables a quadruped robot to walk with three legs and manipulate with the arm and one leg.*
 
 ## Overview
 

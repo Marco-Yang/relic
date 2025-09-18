@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import numpy as np
 import torch
 
-import isaaclab.utils.math as math_utils
 from isaaclab.managers import ManagerTermBase, SceneEntityCfg
 from isaaclab.sensors import ContactSensor
 from isaaclab.assets import Articulation, RigidObject
-from isaaclab.managers import SceneEntityCfg, RewardTermCfg, ManagerTermBase
+from isaaclab.managers import RewardTermCfg
 from isaaclab.envs import ManagerBasedRLEnv
 
 
@@ -204,7 +202,7 @@ def foot_clearance_reward(
 class GaitReward(ManagerTermBase):
     """Gait enforcing reward term for quadrupeds.
 
-    This reward penalizes contact timing differences between selected foot pairs defined in :attr:`synced_feet_pair_names`
+    This reward penalizes contact timing differences between selected foot pairs
     to bias the policy towards a desired gait, i.e trotting, bounding, or pacing. Note that this reward is only for
     quadrupedal gaits with two pairs of synchronized feet.
     """
@@ -213,8 +211,10 @@ class GaitReward(ManagerTermBase):
         """Initialize the term.
 
         Args:
+        ----
             cfg: The configuration of the reward.
             env: The RL environment instance.
+
         """
         super().__init__(cfg, env)
         self.std: float = cfg.params["std"]
@@ -258,9 +258,13 @@ class GaitReward(ManagerTermBase):
         being in sync and the other four rewards if all the other remaining pairs are out of sync
 
         Args:
+        ----
             env: The RL environment instance.
+
         Returns:
+        -------
             The reward value.
+
         """
         # for synchronous feet, the contact (air) times of two feet should match
         sync_reward_0 = self._sync_reward_func(
@@ -459,13 +463,18 @@ def all_leg_flight_phase(
     command_name: str,
 ) -> torch.Tensor:
     """Compute the full flight state for each environment.
+
     Args:
+    ----
         env (ManagerBasedRLEnv): _description_
         asset_cfg (SceneEntityCfg): _description_
         sensor_cfg (SceneEntityCfg): _description_
         threshold (float): A body is in contact is the sensed force is above this threshold [N].
+
     Returns:
+    -------
         torch.Tensor: A tensor with shape (n_envs x 1) representing the full flight state.
+
     """
     # extract the used quantities (to enable type-hinting)
     # TODO avoid computing for command leg
@@ -487,13 +496,18 @@ def three_leg_flight_phase(
     command_name: str,
 ) -> torch.Tensor:
     """Compute the flight state for each environment.
+
     Args:
+    ----
         env (ManagerBasedRLEnv): _description_
         asset_cfg (SceneEntityCfg): _description_
         sensor_cfg (SceneEntityCfg): _description_
         threshold (float): A body is in contact is the sensed force is above this threshold [N].
+
     Returns:
+    -------
         torch.Tensor: A tensor with shape (n_envs x 1) representing the full flight state.
+
     """
     # extract the used quantities (to enable type-hinting)
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
@@ -608,7 +622,9 @@ def track_base_height_l2(
     """Penalize asset height from its target using L2-kernel.
 
     Note:
+    ----
         Currently, it assumes a flat terrain, i.e. the target height is in the world frame.
+
     """
     # extract the used quantities (to enable type-hinting)
     asset: RigidObject = env.scene[asset_cfg.name]
@@ -628,7 +644,8 @@ def adaptive_joint_torques_l2(
 ) -> torch.Tensor:
     """Penalize joint torques applied on the articulation using L2-kernel.
 
-    NOTE: Only the joints configured in :attr:`asset_cfg.joint_ids` will have their joint torques contribute to the L2 norm.
+    NOTE: Only the joints configured in :attr:`asset_cfg.joint_ids` will have their joint
+    torques contribute to the L2 norm.
     """
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
@@ -649,7 +666,8 @@ def adaptive_joint_acc_l2(
 ) -> torch.Tensor:
     """Penalize joint accelerations on the articulation using L2-kernel.
 
-    NOTE: Only the joints configured in :attr:`asset_cfg.joint_ids` will have their joint accelerations contribute to the L2 norm.
+    NOTE: Only the joints configured in :attr:`asset_cfg.joint_ids` will have their joint
+    accelerations contribute to the L2 norm.
     """
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
@@ -755,290 +773,10 @@ def dof_torque_limits_l2(
     return over_limit
 
 
-class GaitPhaseReward(ManagerTermBase):
-    """Gait enforcing reward term for quadrupeds."""
-
-    def __init__(self, cfg: RewardTermCfg, env: ManagerBasedRLEnv):
-        """Initialize the term.
-
-        Args:
-            cfg: The configuration of the reward.
-            env: The RL environment instance.
-        """
-        super().__init__(cfg, env)
-
-        self.env = env
-        step_freq = 1 / env.step_dt
-        self.steps = torch.zeros(env.num_envs, device=self.device)
-
-        four_leg_ratio = cfg.params["four_leg_ratio"]
-        four_leg_alpha = cfg.params["four_leg_alpha"]
-        four_leg_cycle_time = cfg.params["four_leg_cycle_time"]
-        four_leg_phase_len = int(four_leg_cycle_time * step_freq)
-        self.get_four_leg_gait(
-            four_leg_ratio, four_leg_alpha, four_leg_phase_len, vis=False
-        )
-
-        three_leg_ratio = cfg.params["three_leg_ratio"]
-        three_leg_alpha = cfg.params["three_leg_alpha"]
-        three_leg_cycle_time = cfg.params["three_leg_cycle_time"]
-        three_leg_phase_len = int(three_leg_cycle_time * step_freq)
-        self.get_three_leg_gait(
-            three_leg_ratio, three_leg_alpha, three_leg_phase_len, vis=False
-        )
-
-        self.contact_sensor: ContactSensor = env.scene.sensors[
-            cfg.params["sensor_cfg"].name
-        ]
-        self.asset: Articulation = env.scene[cfg.params["asset_cfg"].name]
-
-        self.leg_names = [
-            name.split("_")[0].upper() for name in cfg.params["feet_names"]
-        ]
-        self.feet_body_ids = torch.tensor(
-            self.contact_sensor.find_bodies(cfg.params["feet_names"])[0],
-            device=self.device,
-        )
-        self.leg_idx = torch.tensor([0, 1, 2, 3], device=self.device)
-
-        self.four_leg_phase_len = len(
-            self.four_leg_gait_penalty_scale["FL_force_penalty"]
-        )
-        self.three_leg_phase_len = len(
-            self.three_leg_gait_penalty_scale["leg_1_force_penalty"]
-        )
-
-    def gait_clock(self, phase, phase_len, ratio, alpha, beta):
-        phi = phase / phase_len
-        phi = np.fmod(phi + beta, 1)
-
-        saturation = alpha * (ratio / 2 - 1e-3)
-        slope = 1 / ((ratio / 2) - saturation)
-
-        if phi < saturation:
-            return 1.0
-        elif phi < ratio / 2:
-            return 1 - slope * (phi - saturation)
-        elif phi < 1 - ratio / 2:
-            return 0.0
-        elif phi < 1 - saturation:
-            return 1 + slope * (phi + saturation - 1)
-        else:
-            return 1.0
-
-    def get_four_leg_gait(self, ratio, alpha, phase_len, vis=False):
-        clock1_swings = []
-        clock1_stances = []
-        clock2_swings = []
-        clock2_stances = []
-        phase = 0
-
-        for _ in range(phase_len):
-            phase += 1
-
-            if phase > phase_len:
-                phase = phase % phase_len
-
-            clock1_swing = self.gait_clock(
-                phase, phase_len, ratio=ratio, alpha=alpha * ratio, beta=0.0
-            )
-            clock1_stance = self.gait_clock(
-                phase, phase_len, ratio=1 - ratio, alpha=alpha * (1 - ratio), beta=0.5
-            )
-
-            clock2_swing = self.gait_clock(
-                phase, phase_len, ratio=ratio, alpha=alpha * ratio, beta=0.5
-            )
-            clock2_stance = self.gait_clock(
-                phase, phase_len, ratio=1 - ratio, alpha=alpha * (1 - ratio), beta=0.0
-            )
-
-            clock1_swings += [clock1_swing]
-            clock1_stances += [clock1_stance]
-            clock2_swings += [clock2_swing]
-            clock2_stances += [clock2_stance]
-
-        self.four_leg_gait_penalty_scale = {
-            "FL_force_penalty": torch.tensor(clock1_swings, device=self.device),
-            "FL_velocity_penalty": torch.tensor(clock1_stances, device=self.device),
-            "FR_force_penalty": torch.tensor(clock2_swings, device=self.device),
-            "FR_velocity_penalty": torch.tensor(clock2_stances, device=self.device),
-            "HL_force_penalty": torch.tensor(clock2_swings, device=self.device),
-            "HL_velocity_penalty": torch.tensor(clock2_stances, device=self.device),
-            "HR_force_penalty": torch.tensor(clock1_swings, device=self.device),
-            "HR_velocity_penalty": torch.tensor(clock1_stances, device=self.device),
-        }
-
-    def get_three_leg_gait(self, ratio, alpha, phase_len, vis=False):
-        clock1_swings = []
-        clock1_stances = []
-        clock2_swings = []
-        clock2_stances = []
-        clock3_swings = []
-        clock3_stances = []
-        phase = 0
-
-        for _ in range(phase_len):
-            phase += 1
-
-            # if phase > phase_len:
-            #     phase = phase % phase_len
-
-            clock1_swing = self.gait_clock(
-                phase, phase_len, ratio=ratio, alpha=alpha * ratio, beta=1 / 3 + 0.5
-            )
-            clock1_stance = self.gait_clock(
-                phase, phase_len, ratio=1 - ratio, alpha=alpha * (1 - ratio), beta=1 / 3
-            )
-
-            clock2_swing = self.gait_clock(
-                phase, phase_len, ratio=ratio, alpha=alpha * ratio, beta=0.5
-            )
-            clock2_stance = self.gait_clock(
-                phase, phase_len, ratio=1 - ratio, alpha=alpha * (1 - ratio), beta=0.0
-            )
-
-            clock3_swing = self.gait_clock(
-                phase, phase_len, ratio=ratio, alpha=alpha * ratio, beta=-1 / 3 + 0.5
-            )
-            clock3_stance = self.gait_clock(
-                phase,
-                phase_len,
-                ratio=1 - ratio,
-                alpha=alpha * (1 - ratio),
-                beta=-1 / 3,
-            )
-
-            clock1_swings += [clock1_swing]
-            clock1_stances += [clock1_stance]
-            clock2_swings += [clock2_swing]
-            clock2_stances += [clock2_stance]
-            clock3_swings += [clock3_swing]
-            clock3_stances += [clock3_stance]
-
-        self.three_leg_gait_penalty_scale = {
-            "leg_1_force_penalty": torch.tensor(clock1_swings, device=self.device),
-            "leg_1_velocity_penalty": torch.tensor(clock1_stances, device=self.device),
-            "leg_2_force_penalty": torch.tensor(clock2_swings, device=self.device),
-            "leg_2_velocity_penalty": torch.tensor(clock2_stances, device=self.device),
-            "leg_3_force_penalty": torch.tensor(clock3_swings, device=self.device),
-            "leg_3_velocity_penalty": torch.tensor(clock3_stances, device=self.device),
-        }
-
-    def randomize_steps(self, env_ids):
-        if len(env_ids) > 0:
-            command_leg = self.env.command_manager.get_term(
-                "arm_leg_joint_base_pose"
-            ).command_leg[env_ids]
-            max_length = (
-                command_leg * self.three_leg_phase_len
-                + (1 - command_leg.int()) * self.four_leg_phase_len
-            )
-            self.steps[env_ids] = math_utils.sample_uniform(
-                torch.zeros_like(max_length), max_length, max_length.shape, self.device
-            ).round()
-
-    def __call__(
-        self,
-        env: ManagerBasedRLEnv,
-        four_leg_ratio: float,
-        four_leg_alpha: float,
-        four_leg_cycle_time: float,
-        three_leg_ratio: float,
-        three_leg_alpha: float,
-        three_leg_cycle_time: float,
-        asset_cfg: SceneEntityCfg,
-        sensor_cfg: SceneEntityCfg,
-        feet_names: tuple[str],
-        std: float,
-    ) -> torch.Tensor:
-        """Compute the reward.
-
-        Args:
-            env: The RL environment instance.
-        Returns:
-            The reward value.
-        """
-        command_term = env.command_manager.get_term("arm_leg_joint_base_pose")
-        command_leg = command_term.command_leg
-        penalty = torch.zeros(self.num_envs, device=self.device)
-
-        # Four leg
-        four_leg_env_ids = torch.nonzero(~command_leg, as_tuple=False).view(-1)
-        for leg_name, foot_body_id in zip(self.leg_names, self.feet_body_ids):
-            # obtain the penalty scale
-            force_term_name = f"{leg_name}_force_penalty"
-            velocity_term_name = f"{leg_name}_velocity_penalty"
-            steps = self.steps[four_leg_env_ids].int() % self.four_leg_phase_len
-            force_penalty_scale = self.four_leg_gait_penalty_scale[force_term_name][
-                steps
-            ]
-            velocity_penalty_scale = self.four_leg_gait_penalty_scale[
-                velocity_term_name
-            ][steps]
-
-            # obtain the force and velocity of the foot
-            foot_contact_force = self.contact_sensor.data.net_forces_w[
-                four_leg_env_ids, foot_body_id, :
-            ].norm(dim=1)
-            foot_velocity = self.asset.data.body_lin_vel_w[
-                four_leg_env_ids, foot_body_id, :
-            ].norm(dim=1)
-
-            # accumulate penalty
-            penalty[four_leg_env_ids] += (
-                force_penalty_scale * foot_contact_force
-            ).abs() + (velocity_penalty_scale * foot_velocity).abs()
-
-        del leg_name, foot_body_id
-
-        # Three leg
-        three_leg_env_ids = torch.nonzero(command_leg, as_tuple=False).view(-1)
-        command_leg_idx = command_term.command_leg_idxs[three_leg_env_ids]
-        leg_idx = self.leg_idx.repeat(len(three_leg_env_ids), 1)
-        active_leg_idx = leg_idx[leg_idx != command_leg_idx.unsqueeze(1)].view(
-            len(three_leg_env_ids), -1
-        )  # legs that are controlled by RL
-
-        for idx in range(3):  # column idx
-            # obtain the penalty scale
-            force_term_name = f"leg_{idx+1}_force_penalty"
-            velocity_term_name = f"leg_{idx+1}_velocity_penalty"
-            steps = self.steps[three_leg_env_ids].int() % self.three_leg_phase_len
-            force_penalty_scale = self.three_leg_gait_penalty_scale[force_term_name][
-                steps
-            ]
-            velocity_penalty_scale = self.three_leg_gait_penalty_scale[
-                velocity_term_name
-            ][steps]
-
-            # obtain the force and velocity of the foot
-            foot_body_ids = self.feet_body_ids[active_leg_idx[:, idx]]
-            foot_contact_force = self.contact_sensor.data.net_forces_w[
-                three_leg_env_ids, foot_body_ids, :
-            ].norm(dim=1)
-            foot_velocity = self.asset.data.body_lin_vel_w[
-                three_leg_env_ids, foot_body_ids, :
-            ].norm(dim=1)
-
-            # accumulate penalty
-            penalty[three_leg_env_ids] += (
-                force_penalty_scale * foot_contact_force
-            ).abs() + (velocity_penalty_scale * foot_velocity).abs()
-
-        self.steps += 1
-
-        reward = torch.exp(-penalty / std)
-
-        # only enforce gait if cmd > 0 and leg not in control
-        cmd = torch.norm(env.command_manager.get_command("base_velocity"), dim=1)
-        return torch.where(cmd > 0.0, reward, 0.0)
-
-
 class ThreeLegGaitReward(ManagerTermBase):
     """Gait enforcing reward term for quadrupeds.
 
-    This reward penalizes contact timing differences between selected foot pairs defined in :attr:`synced_feet_pair_names`
+    This reward penalizes contact timing differences between selected foot pairs
     to bias the policy towards a desired gait, i.e trotting, bounding, or pacing. Note that this reward is only for
     quadrupedal gaits with two pairs of synchronized feet.
     """
@@ -1047,8 +785,10 @@ class ThreeLegGaitReward(ManagerTermBase):
         """Initialize the term.
 
         Args:
+        ----
             cfg: The configuration of the reward.
             env: The RL environment instance.
+
         """
         super().__init__(cfg, env)
         self.std: float = cfg.params["std"]
@@ -1086,9 +826,13 @@ class ThreeLegGaitReward(ManagerTermBase):
         being in sync and the other four rewards if all the other remaining pairs are out of sync
 
         Args:
+        ----
             env: The RL environment instance.
+
         Returns:
+        -------
             The reward value.
+
         """
         air_time = self.contact_sensor.data.current_air_time
         contact_time = self.contact_sensor.data.current_contact_time

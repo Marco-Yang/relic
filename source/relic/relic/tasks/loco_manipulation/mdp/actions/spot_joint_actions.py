@@ -5,11 +5,7 @@ from __future__ import annotations
 import torch
 from typing import TYPE_CHECKING
 
-import carb
 
-import isaaclab.utils.string as string_utils
-from isaaclab.assets.articulation import Articulation
-from isaaclab.managers.action_manager import ActionTerm
 from isaaclab.envs.mdp.actions import JointAction
 
 if TYPE_CHECKING:
@@ -49,13 +45,16 @@ class PDArmJointPositionAction(JointAction):
 
     @property
     def arm_raw_actions(self) -> torch.Tensor:
+        """Get the raw arm actions."""
         return self._arm_raw_actions
 
     @property
     def arm_processed_actions(self) -> torch.Tensor:
+        """Get the processed arm actions."""
         return self._arm_processed_actions
 
     def apply_actions(self):
+        """Apply the actions."""
         # set position targets
         self._asset.set_joint_position_target(
             self.processed_actions, joint_ids=self._joint_ids
@@ -65,6 +64,7 @@ class PDArmJointPositionAction(JointAction):
         )
 
     def process_actions(self, actions: torch.Tensor):
+        """Process the actions."""
         # store the raw actions
         self._raw_actions[:] = actions
         # apply the affine transformations
@@ -117,6 +117,7 @@ class PDArmLegJointPositionAction(JointAction):
         self._leg_processed_actions = torch.zeros_like(self._leg_raw_actions)
 
     def apply_actions(self):
+        """Apply the actions."""
         # set position targets
         self._asset.set_joint_position_target(
             self.processed_actions, joint_ids=self._joint_ids
@@ -129,6 +130,7 @@ class PDArmLegJointPositionAction(JointAction):
         )
 
     def process_actions(self, actions: torch.Tensor):
+        """Process the actions."""
         # store the raw actions
         self._raw_actions[:] = actions
         # apply the affine transformations
@@ -148,18 +150,22 @@ class PDArmLegJointPositionAction(JointAction):
 
     @property
     def arm_raw_actions(self) -> torch.Tensor:
+        """Get the raw arm actions."""
         return self._arm_raw_actions
 
     @property
     def arm_processed_actions(self) -> torch.Tensor:
+        """Get the processed arm actions."""
         return self._arm_processed_actions
 
     @property
     def leg_raw_actions(self) -> torch.Tensor:
+        """Get the raw leg actions."""
         return self._leg_raw_actions
 
     @property
     def leg_processed_actions(self) -> torch.Tensor:
+        """Get the processed leg actions."""
         return self._leg_processed_actions
 
 
@@ -210,6 +216,7 @@ class PDArmMultiLegJointPositionAction(JointAction):
         self.action_joint_idxs = torch.tensor(self._joint_ids, device=self.device)
 
     def apply_actions(self):
+        """Apply the actions."""
         # set position targets
         self._asset.set_joint_position_target(
             self.processed_actions, joint_ids=self._joint_ids
@@ -219,6 +226,7 @@ class PDArmMultiLegJointPositionAction(JointAction):
         )
 
     def process_actions(self, actions: torch.Tensor):
+        """Process the actions."""
         # store the raw actions
         self._raw_actions[:] = actions
         # apply the affine transformations
@@ -244,8 +252,14 @@ class PDArmMultiLegJointPositionAction(JointAction):
         self._leg_processed_actions[:] = self._leg_raw_actions.clone()
 
         # overwrite command leg actions
-        # --- order of command: ['fl_hx', 'fl_hy', 'fl_kn', 'fr_hx', 'fr_hy', 'fr_kn', 'hl_hx', 'hl_hy', 'hl_kn', 'hr_hx', 'hr_hy', 'hr_kn']
-        # --- order of control: ['fl_hx', 'fr_hx', 'hl_hx', 'hr_hx', 'fl_hy', 'fr_hy', 'hl_hy', 'hr_hy', 'fl_kn', 'fr_kn', 'hl_kn', 'hr_kn']
+        # --- order of command: [
+        # 'fl_hx', 'fl_hy', 'fl_kn', 'fr_hx', 'fr_hy', 'fr_kn',
+        # 'hl_hx', 'hl_hy', 'hl_kn', 'hr_hx', 'hr_hy', 'hr_kn'
+        # ]
+        # --- order of control: [
+        # 'fl_hx', 'fr_hx', 'hl_hx', 'hr_hx', 'fl_hy', 'fr_hy',
+        # 'hl_hy', 'hr_hy', 'fl_kn', 'fr_kn', 'hl_kn', 'hr_kn'
+        # ]
         leg_joint_idxs = self.leg_command.leg_joint_idxs[
             self.leg_command.command_leg_idxs
         ]  # commanded leg joint idx in the simulation
@@ -267,18 +281,22 @@ class PDArmMultiLegJointPositionAction(JointAction):
 
     @property
     def arm_raw_actions(self) -> torch.Tensor:
+        """Get the raw arm actions."""
         return self._arm_raw_actions
 
     @property
     def arm_processed_actions(self) -> torch.Tensor:
+        """Get the processed arm actions."""
         return self._arm_processed_actions
 
     @property
     def leg_raw_actions(self) -> torch.Tensor:
+        """Get the raw leg actions."""
         return self._leg_raw_actions
 
     @property
     def leg_processed_actions(self) -> torch.Tensor:
+        """Get the processed leg actions."""
         return self._leg_processed_actions
 
 
@@ -328,6 +346,7 @@ class MixedPDArmMultiLegJointPositionAction(JointAction):
         self.action_joint_idxs = torch.tensor(self._joint_ids, device=self.device)
 
     def apply_actions(self):
+        """Apply the actions."""
         # set position targets
         self._asset.set_joint_position_target(
             self.processed_actions, joint_ids=self._joint_ids
@@ -337,6 +356,7 @@ class MixedPDArmMultiLegJointPositionAction(JointAction):
         )
 
     def process_actions(self, actions: torch.Tensor):
+        """Process the actions."""
         # store the raw actions
         self._raw_actions[:] = actions
         # apply the affine transformations
@@ -360,8 +380,14 @@ class MixedPDArmMultiLegJointPositionAction(JointAction):
         self._leg_processed_actions[:] = self._leg_raw_actions.clone()
 
         # overwrite command leg actions
-        # --- order of command: ['fl_hx', 'fl_hy', 'fl_kn', 'fr_hx', 'fr_hy', 'fr_kn', 'hl_hx', 'hl_hy', 'hl_kn', 'hr_hx', 'hr_hy', 'hr_kn']
-        # --- order of control: ['fl_hx', 'fr_hx', 'hl_hx', 'hr_hx', 'fl_hy', 'fr_hy', 'hl_hy', 'hr_hy', 'fl_kn', 'fr_kn', 'hl_kn', 'hr_kn']
+        # --- order of command: [
+        # 'fl_hx', 'fl_hy', 'fl_kn', 'fr_hx', 'fr_hy', 'fr_kn',
+        # 'hl_hx', 'hl_hy', 'hl_kn', 'hr_hx', 'hr_hy', 'hr_kn'
+        # ]
+        # --- order of control: [
+        # 'fl_hx', 'fr_hx', 'hl_hx', 'hr_hx', 'fl_hy', 'fr_hy', 'hl_hy', 'hr_hy',
+        # 'fl_kn', 'fr_kn', 'hl_kn', 'hr_kn'
+        # ]
         leg_joint_idxs = self.command.leg_joint_idxs[
             self.command.command_leg_idxs
         ]  # commanded leg joint idx in the simulation
@@ -383,16 +409,20 @@ class MixedPDArmMultiLegJointPositionAction(JointAction):
 
     @property
     def arm_raw_actions(self) -> torch.Tensor:
+        """Get the raw arm actions."""
         return self._arm_raw_actions
 
     @property
     def arm_processed_actions(self) -> torch.Tensor:
+        """Get the processed arm actions."""
         return self._arm_processed_actions
 
     @property
     def leg_raw_actions(self) -> torch.Tensor:
+        """Get the raw leg actions."""
         return self._leg_raw_actions
 
     @property
     def leg_processed_actions(self) -> torch.Tensor:
+        """Get the processed leg actions."""
         return self._leg_processed_actions

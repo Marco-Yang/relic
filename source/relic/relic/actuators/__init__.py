@@ -2,5 +2,5 @@
 
 """Package containing actuator configurations."""
 
-from .actuator_spot import *
-from .actuator_spot_cfg import *
+from .actuator_spot import *  # noqa: F403
+from .actuator_spot_cfg import *  # noqa: F403

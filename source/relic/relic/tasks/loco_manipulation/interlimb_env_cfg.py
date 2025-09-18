@@ -21,7 +21,6 @@ from isaaclab.sensors import ContactSensorCfg
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
-from relic.assets import ASSET_DIR
 
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as isaac_mdp
 import relic.tasks.loco_manipulation.mdp as mdp
@@ -48,9 +47,6 @@ COBBLESTONE_ROAD_CFG = terrain_gen.TerrainGeneratorCfg(
         ),
     },
 )
-
-
-CACHED_FEASIBLE_COMMAND_PATH = f"{ASSET_DIR}/spot/feasible_commands.pt"
 
 
 ########################################################
@@ -137,7 +133,6 @@ class CommandsCfg:
         hold_time=(0.5, 2),
         arm_joint_names=ARM_JOINT_NAMES,
         leg_joint_names=LEG_JOINT_NAMES,
-        cached_feasible_command_path=CACHED_FEASIBLE_COMMAND_PATH,
         command_which_leg=4,  # -1: no leg; [0, 1, 2, 3]: [FL, FR, HL, HR]; 4: all leg
         debug_vis=False,
     )
@@ -325,8 +320,16 @@ class RewardsCfg:
         weight=-3.5,
         params={"command_name": "arm_leg_joint_base_pose"},
     )
-    # track_base_orientation_exp = RewTerm(func=mdp.track_base_orientation_exp, weight=1.0, params={"command_name": "arm_leg_joint_base_pose", "std": 0.1})
-    # track_base_height_exp = RewTerm(func=mdp.track_base_height_exp, weight=1.0, params={"command_name": "arm_leg_joint_base_pose", "std": 0.02})
+    # track_base_orientation_exp = RewTerm(
+    #     func=mdp.track_base_orientation_exp,
+    #     weight=1.0,
+    #     params={"command_name": "arm_leg_joint_base_pose", "std": 0.1},
+    # )
+    # track_base_height_exp = RewTerm(
+    #     func=mdp.track_base_height_exp,
+    #     weight=1.0,
+    #     params={"command_name": "arm_leg_joint_base_pose", "std": 0.02},
+    # )
 
     # -- penalties
     lin_vel_z_l2 = RewTerm(func=isaac_mdp.lin_vel_z_l2, weight=-0.0)

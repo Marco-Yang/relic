@@ -2,8 +2,7 @@
 
 from dataclasses import MISSING
 
-from isaaclab.controllers import DifferentialIKControllerCfg
-from isaaclab.managers.action_manager import ActionTerm, ActionTermCfg
+from isaaclab.managers.action_manager import ActionTerm
 from isaaclab.utils import configclass
 from isaaclab.envs.mdp.actions import JointActionCfg
 

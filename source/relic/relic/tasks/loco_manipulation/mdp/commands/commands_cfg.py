@@ -156,6 +156,5 @@ class ArmLegJointBasePoseCommandCfg(CommandTermCfg):
     arm_joint_names: tuple[str, ...] = MISSING
     leg_joint_names: dict = MISSING
 
-    cached_feasible_command_path: str = MISSING
     command_which_leg: int = MISSING
     """Which leg to command: -1: no leg; [0, 1, 2, 3]: [FL, FR, HL, HR]; 4: all leg"""
