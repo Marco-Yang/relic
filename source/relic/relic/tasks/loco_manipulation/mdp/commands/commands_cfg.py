@@ -144,17 +144,30 @@ class ArmLegJointBasePoseCommandCfg(CommandTermCfg):
 
     class_type: type = ArmLegJointBasePoseCommand
 
-    asset_name: str = MISSING
+    asset_name: str = "robot"
     """Name of the asset in the environment for which the commands are generated."""
 
-    trajectory_time: tuple[float, float] = MISSING
+    trajectory_time: tuple[float, float] = (1.0, 3.0)
     """Length of the trajectory in seconds."""
 
-    hold_time: tuple[float, float] = MISSING
+    hold_time: tuple[float, float] = (0.5, 2.0)
     """Length of the arm holding in positon in seconds."""
 
     arm_joint_names: tuple[str, ...] = MISSING
     leg_joint_names: dict = MISSING
 
-    command_which_leg: int = MISSING
+    command_range_roll: tuple[float, float] = (-0.35, 0.35)
+    command_range_pitch: tuple[float, float] = (-0.35, 0.35)
+    command_range_height: tuple[float, float] = (0.25, 0.65)
+    command_range_arm_joint: tuple[list[float, ...], list[float, ...]] = (
+        [-2.61799, -3.14159, 0.0, -2.79252, -1.8326, -2.87988, -1.5708],
+        [3.14157, 0.52359, 3.14158, 2.79252, 1.83259, 2.87979, 0.0],
+    )
+    command_range_leg_joint: tuple[list[float, ...], list[float, ...]] = (
+        [-0.7854, -0.89884, -2.7929],
+        [0.78539, 2.29511, 0.0],
+    )
+    """Command sample ranges."""
+
+    command_which_leg: int = 4
     """Which leg to command: -1: no leg; [0, 1, 2, 3]: [FL, FR, HL, HR]; 4: all leg"""

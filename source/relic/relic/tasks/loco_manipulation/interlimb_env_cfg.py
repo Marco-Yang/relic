@@ -26,9 +26,11 @@ import isaaclab_tasks.manager_based.locomotion.velocity.mdp as isaac_mdp
 import relic.tasks.loco_manipulation.mdp as mdp
 from relic.assets.spot.constants import ARM_JOINT_NAMES, LEG_JOINT_NAMES, FEET_NAMES
 
+
 ########################################################
 # Pre-defined configs
 ########################################################
+
 
 COBBLESTONE_ROAD_CFG = terrain_gen.TerrainGeneratorCfg(
     size=(8.0, 8.0),
@@ -127,13 +129,9 @@ class CommandsCfg:
     )
 
     arm_leg_joint_base_pose = mdp.ArmLegJointBasePoseCommandCfg(
-        asset_name="robot",
         resampling_time_range=(1e6, 1e6),
-        trajectory_time=(1, 3),
-        hold_time=(0.5, 2),
         arm_joint_names=ARM_JOINT_NAMES,
         leg_joint_names=LEG_JOINT_NAMES,
-        command_which_leg=4,  # -1: no leg; [0, 1, 2, 3]: [FL, FR, HL, HR]; 4: all leg
         debug_vis=False,
     )
 
@@ -149,7 +147,6 @@ class ActionsCfg:
         arm_joint_names=ARM_JOINT_NAMES,
         leg_joint_names=LEG_JOINT_NAMES,
         scale=0.2,
-        use_default_offset=True,
     )
 
 
@@ -161,7 +158,6 @@ class ObservationsCfg:
     class PolicyCfg(ObsGroup):
         """Observations for policy group."""
 
-        # observation terms (order preserved)
         base_lin_vel = ObsTerm(
             func=isaac_mdp.base_lin_vel, noise=Unoise(n_min=-0.1, n_max=0.1)
         )
@@ -187,13 +183,10 @@ class ObservationsCfg:
         )
         actions = ObsTerm(func=isaac_mdp.last_action)
 
-        # gait_phase = ObsTerm(func=mdp.gait_phase)
-
         def __post_init__(self):
             self.enable_corruption = True
             self.concatenate_terms = True
 
-    # observation groups
     policy: PolicyCfg = PolicyCfg()
 
 

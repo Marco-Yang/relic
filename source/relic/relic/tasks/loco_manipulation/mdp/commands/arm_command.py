@@ -848,20 +848,48 @@ class ArmLegJointBasePoseCommand(CommandTerm):
             / self.step_dt
         ).int()
 
-        # load pre-computed feasible commands
-        self.cached_command = torch.load(self.cfg.cached_feasible_command_path)
-        self.num_cached_command = len(self.cached_command["roll"])
-        for k, v in self.cached_command.items():
-            assert len(v) == self.num_cached_command
-            if not isinstance(v[0], str):
-                self.cached_command[k] = torch.tensor(v, device=self.device)
-            else:
-                sampled_leg_idx = [
-                    self.leg_names.index(i) if i is not None else -1 for i in v
-                ]
-                self.cached_command[k] = torch.tensor(
-                    sampled_leg_idx, device=self.device
-                )
+        # Pre-compute feasible commands
+        self.num_cached_command = 500000
+        self.cached_command: dict[str, torch.Tensor] = dict()
+        self.cached_command["roll"] = math_utils.sample_uniform(
+            self.cfg.command_range_roll[0],
+            self.cfg.command_range_roll[1],
+            (self.num_cached_command,),
+            device=self.device,
+        )
+        self.cached_command["pitch"] = math_utils.sample_uniform(
+            self.cfg.command_range_pitch[0],
+            self.cfg.command_range_pitch[1],
+            (self.num_cached_command,),
+            device=self.device,
+        )
+        self.cached_command["height"] = math_utils.sample_uniform(
+            self.cfg.command_range_height[0],
+            self.cfg.command_range_height[1],
+            (self.num_cached_command,),
+            device=self.device,
+        )
+        self.cfg.command_range_arm_joint = torch.tensor(
+            self.cfg.command_range_arm_joint, device=self.device
+        )
+        self.cached_command["arm_joint"] = math_utils.sample_uniform(
+            self.cfg.command_range_arm_joint[0],
+            self.cfg.command_range_arm_joint[1],
+            (self.num_cached_command, len(self.cfg.command_range_arm_joint[0])),
+            device=self.device,
+        )
+        self.cfg.command_range_leg_joint = torch.tensor(
+            self.cfg.command_range_leg_joint, device=self.device
+        )
+        self.cached_command["sampled_leg_joint"] = math_utils.sample_uniform(
+            self.cfg.command_range_leg_joint[0],
+            self.cfg.command_range_leg_joint[1],
+            (self.num_cached_command, len(self.cfg.command_range_leg_joint[0])),
+            device=self.device,
+        )
+        self.cached_command["sampled_leg_name"] = torch.randint(
+            -1, 4, (self.num_cached_command,), device=self.device
+        )
 
         # filter the commands based on command_which_leg
         assert self.cfg.command_which_leg in [-1, 0, 1, 2, 3, 4]
