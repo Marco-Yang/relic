@@ -15,7 +15,7 @@ class SpotInterlimbPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
     max_iterations = 10000
     save_interval = 200
-    experiment_name = "spor_interlimb"
+    experiment_name = "spot_interlimb"
     empirical_normalization = False
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,

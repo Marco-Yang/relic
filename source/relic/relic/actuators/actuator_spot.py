@@ -46,8 +46,12 @@ class SpotKneeActuator(RemotizedPDActuator):
             velocity_limit,
         )
 
-        self._pos_torque_speed_data = cfg.pos_torque_speed_limit.to(device=device)
-        self._neg_torque_speed_data = cfg.neg_torque_speed_limit.to(device=device)
+        self._pos_torque_speed_data = torch.tensor(
+            cfg.pos_torque_speed_limit, device=device
+        )
+        self._neg_torque_speed_data = torch.tensor(
+            cfg.neg_torque_speed_limit, device=device
+        )
         self._enable_torque_speed_limit = cfg.enable_torque_speed_limit
 
         # define remotized joint torque limit
