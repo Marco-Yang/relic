@@ -19,14 +19,6 @@ def illegal_ground_contact(
         :, sensor_cfg.body_ids, ...
     ].squeeze()
     # check if any contact force with the ground exceeds the threshold
-    contact_norms = torch.norm(contact_forces_with_ground, dim=-1)
-    
-    # Handle both single and multi-environment cases
-    if contact_norms.dim() == 1:
-        # Single environment case
-        max_contact_force = torch.max(contact_norms)
-    else:
-        # Multi-environment case
-        max_contact_force = torch.max(contact_norms, dim=1)[0]
-    
-    return max_contact_force > threshold
+    return (
+        torch.max(torch.norm(contact_forces_with_ground, dim=-1), dim=1)[0] > threshold
+    )
